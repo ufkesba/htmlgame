@@ -27,19 +27,19 @@ var Entity = function(){
         spdX:0,
         spdY:0,
         id:"",
-    }
+    };
     self.update = function(){
         self.updatePosition();
-    }
+    };
     self.updatePosition = function(){
         self.x += self.spdX;
         self.y += self.spdY;
-    }
+    };
     self.getDistance = function(pt){
         return Math.sqrt(Math.pow(self.x-pt.x,2) + Math.pow(self.y-pt.y,2));
-    }
+    };
     return self;
-}
+};
  
 // Player object/class
 var Player = function(id){
@@ -62,12 +62,12 @@ var Player = function(id){
         if(self.pressingAttack){
             self.shootBullet(self.mouseAngle);
         }
-    }
+    };
     self.shootBullet = function(angle) {
         var b = Bullet(self.id,angle);
         b.x = self.x;
         b.y = self.y;
-    }
+    };
    
    
     self.updateSpd = function(){
@@ -84,10 +84,10 @@ var Player = function(id){
             self.spdY = self.maxSpd;
         else
             self.spdY = 0;     
-    }
+    };
     Player.list[id] = self;
     return self;
-}
+};
 Player.list = {};
 Player.onConnect = function(socket){
     var player = Player(socket.id);
@@ -105,10 +105,10 @@ Player.onConnect = function(socket){
         else if(data.inputId === 'mouseAngle')
             player.mouseAngle = data.state;
     });
-}
+};
 Player.onDisconnect = function(socket){
     delete Player.list[socket.id];
-}
+};
 Player.update = function(){
     var pack = [];
     for(var i in Player.list){
@@ -146,10 +146,10 @@ var Bullet = function(parent,angle){
                 self.toRemove = true;
             }
         }
-    }
+    };
     Bullet.list[self.id] = self;
     return self;
-}
+};
 
 //List of bullets in the environment
 Bullet.list = {};
@@ -168,7 +168,7 @@ Bullet.update = function(){
             });    
     }
     return pack;
-}
+};
 
 var DEBUG = true;
 
@@ -209,7 +209,7 @@ setInterval(function(){
     var pack = {
         player:Player.update(),
         bullet:Bullet.update(),
-    }
+    };
    
     for(var i in SOCKET_LIST){
         var socket = SOCKET_LIST[i];
