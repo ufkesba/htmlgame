@@ -1,0 +1,17 @@
+canvas {
+    border: 1px solid #000000;
+}
+
+.chat-box {
+    width:500px;
+    height:100px; 
+    overflow-y:scroll;
+}
+
+.chat-form {
+    height: 200px;
+}
+
+.chat-input {
+    width:500px;
+}
