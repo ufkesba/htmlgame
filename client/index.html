@@ -6,17 +6,28 @@
         <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
     </head>
 
-    <canvas class="ctx" id="ctx" width="500" height="500"></canvas>
-
-    <div class="spacer" style="height:10px;"></div>
-    <div class="chat-box" id="chat-box">
-        <div>Here is my chat...</div>
+    <!-- Sign-In Screen -->
+    <div id="signDiv">
+            Username: <input id="signDiv-username" type="text"></input><br>
+            Password: <input id="signDiv-password" type="password"></input>
+            <button id="signDiv-signIn">Sign In</button>
+            <button id="signDiv-signUp">Sign Up</button>
     </div>
 
-    <div class="spacer" style="height:10px;"></div>
-    <form class="chat-form" id="chat-form">
-        <input class="chat-input" id="chat-input" type="text"></input> 
-    </form>
+    <!-- In-Game Screen -->
+    <div id="gameDiv" style="display:none;">
+        <canvas class="ctx" id="ctx" width="500" height="500"></canvas>
+
+        <div class="spacer" style="height:10px;"></div>
+        <div class="chat-box" id="chat-box">
+            <div>Welcome to the game!!!</div>
+        </div>
+    
+        <div class="spacer" style="height:10px;"></div>
+        <form class="chat-form" id="chat-form">
+            <input class="chat-input" id="chat-input" type="text"></input> 
+        </form>
+    </div>
 
     <script  src="/client/js/client.js"></script>
 </html>
