@@ -1,15 +1,14 @@
 //app.js
 //server file
 
-// use myGame 
-// db.createCollection("account");
-// db.createCollection("progress");
 var mongojs = require("mongojs");
 var db = mongojs('localhost:27017/myGame', ['account','progress']);
 
 var express = require('express');
 var app = express();
 var serv = require('http').Server(app);
+
+var DEBUG = true;
  
 //default request
 app.get('/',function(req, res) {
@@ -24,6 +23,7 @@ serv.listen(2000);
 // List of sockets connected to server
 var SOCKET_LIST = {};
  
+// #region Entity-Object
 // Entity in the game
 // Used by bullets and players
 var Entity = function(){
@@ -46,7 +46,9 @@ var Entity = function(){
     };
     return self;
 };
- 
+// #endregion Entity-Object
+
+// #region Player-Object
 // Player object/class
 var Player = function(id){
     var self = Entity();
@@ -160,8 +162,9 @@ Player.update = function(){
     }
     return pack;
 };
+// #endregion Player-Object
 
-// #region Bullet
+// #region Bullet-Object
 var Bullet = function(parent,angle){
     var self = Entity();
     self.id = Math.random();
@@ -236,9 +239,7 @@ Bullet.getAllInitPack = function(){
     return bullets;
 }
 
-// #endregion Bullet
-
-var DEBUG = true;
+// #endregion Bullet-Object
 
 // #region Sign-In
 var USERS = {
@@ -319,7 +320,6 @@ io.sockets.on('connection', function(socket){
 //update every 40ms
 var initPack = {player:[],bullet:[]};
 var removePack = {player:[],bullet:[]};
-
 
 setInterval(function(){
 	var pack = {
