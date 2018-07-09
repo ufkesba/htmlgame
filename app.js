@@ -59,6 +59,9 @@ var Player = function(id){
     self.pressingAttack = false;
     self.mouseAngle = 0;
     self.maxSpd = 5;
+    self.hp = 10;
+    self.hpMax = 10;
+    self.score = 0;
    
     var super_update = self.update;
     self.update = function(){
@@ -75,7 +78,6 @@ var Player = function(id){
         b.y = self.y;
     };
    
-   
     self.updateSpd = function(){
         if(self.pressingRight)
             self.spdX = self.maxSpd;
@@ -91,7 +93,31 @@ var Player = function(id){
         else
             self.spdY = 0;     
     };
+
+    self.getInitPack = function(){
+        return {
+            id:self.id,
+            x:self.x,
+            y:self.y,  
+            number:self.number,
+            hp:self.hp,
+            hpMax:self.hpMax,
+            score:self.score,
+        };     
+    }
+    self.getUpdatePack = function(){
+        return {
+            id:self.id,
+            x:self.x,
+            y:self.y,
+            hp:self.hp,
+            score:self.score,
+        }  
+    }
+   
     Player.list[id] = self;
+   
+    initPack.player.push(self.getInitPack());
     return self;
 };
 Player.list = {};
@@ -111,7 +137,17 @@ Player.onConnect = function(socket){
         else if(data.inputId === 'mouseAngle')
             player.mouseAngle = data.state;
     });
+    socket.emit('init',{
+        player:Player.getAllInitPack(),
+        bullet:Bullet.getAllInitPack(),
+    })
 };
+Player.getAllInitPack = function(){
+    var players = [];
+    for(var i in Player.list)
+        players.push(Player.list[i].getInitPack());
+    return players;
+}
 Player.onDisconnect = function(socket){
     delete Player.list[socket.id];
 };
@@ -120,23 +156,18 @@ Player.update = function(){
     for(var i in Player.list){
         var player = Player.list[i];
         player.update();
-        pack.push({
-            x:player.x,
-            y:player.y,
-            number:player.number
-        });    
+        pack.push(player.getUpdatePack());    
     }
     return pack;
 };
 
+// #region Bullet
 var Bullet = function(parent,angle){
     var self = Entity();
     self.id = Math.random();
     self.spdX = Math.cos(angle/180*Math.PI) * 10;
     self.spdY = Math.sin(angle/180*Math.PI) * 10;
     self.parent = parent;
-
-   
     self.timer = 0;
     self.toRemove = false;
     var super_update = self.update;
@@ -148,12 +179,37 @@ var Bullet = function(parent,angle){
         for(var i in Player.list){
             var p = Player.list[i];
             if(self.getDistance(p) < 32 && self.parent !== p.id){
-                //handle collision. ex: hp--;
+                p.hp -= 1;
+                               
+                if(p.hp <= 0){
+                    var shooter = Player.list[self.parent];
+                    if(shooter)
+                        shooter.score += 1;
+                    p.hp = p.hpMax;
+                    p.x = Math.random() * 500;
+                    p.y = Math.random() * 500;                 
+                }
                 self.toRemove = true;
             }
         }
     };
+    self.getInitPack = function(){
+        return {
+            id:self.id,
+            x:self.x,
+            y:self.y,      
+        };
+    }
+    self.getUpdatePack = function(){
+        return {
+            id:self.id,
+            x:self.x,
+            y:self.y,      
+        };
+    }
+   
     Bullet.list[self.id] = self;
+    initPack.bullet.push(self.getInitPack());
     return self;
 };
 
@@ -165,16 +221,22 @@ Bullet.update = function(){
     for(var i in Bullet.list){
         var bullet = Bullet.list[i];
         bullet.update();
-        if(bullet.toRemove)
+        if(bullet.toRemove){
             delete Bullet.list[i];
-        else
-            pack.push({
-                x:bullet.x,
-                y:bullet.y,
-            });    
+            removePack.bullet.push(bullet.id);
+        } else
+            pack.push(bullet.getUpdatePack());    
     }
     return pack;
 };
+Bullet.getAllInitPack = function(){
+    var bullets = [];
+    for(var i in Bullet.list)
+        bullets.push(Bullet.list[i].getInitPack());
+    return bullets;
+}
+
+// #endregion Bullet
 
 var DEBUG = true;
 
@@ -255,14 +317,25 @@ io.sockets.on('connection', function(socket){
 // #endregion Sign-In
 
 //update every 40ms
+var initPack = {player:[],bullet:[]};
+var removePack = {player:[],bullet:[]};
+
+
 setInterval(function(){
-    var pack = {
-        player:Player.update(),
-        bullet:Bullet.update(),
-    };
-   
-    for(var i in SOCKET_LIST){
-        var socket = SOCKET_LIST[i];
-        socket.emit('newPositions',pack);
-    }
+	var pack = {
+		player:Player.update(),
+		bullet:Bullet.update(),
+	}
+	
+	for(var i in SOCKET_LIST){
+		var socket = SOCKET_LIST[i];
+		socket.emit('init',initPack);
+		socket.emit('update',pack);
+		socket.emit('remove',removePack);
+	}
+	initPack.player = [];
+	initPack.bullet = [];
+	removePack.player = [];
+	removePack.bullet = [];
+	
 },1000/25);
