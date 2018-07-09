@@ -1,5 +1,7 @@
 var socket = io();
-
+var WIDTH = 500;
+var HEIGHT = 500;
+    
 // #region Sign-In
 var signDiv = document.getElementById('signDiv');
 var signDivUsername = document.getElementById('signDiv-username');
@@ -55,6 +57,14 @@ chatForm.onsubmit = function(e){
 // #endregion Chat
 
 // #region Game-Logic
+var Img = {};
+Img.player = new Image();
+Img.player.src = '/client/img/player.png';
+Img.bullet = new Image();
+Img.bullet.src = '/client/img/bullet.png';
+Img.map = new Image();
+Img.map.src = '/client/img/map.png';
+    
 var canvas = document.getElementById("gameDiv");
 var ctx = document.getElementById("ctx").getContext("2d");
 ctx.font = '30px Arial';
@@ -69,18 +79,29 @@ var Player = function(initPack){
     self.hpMax = initPack.hpMax;
     self.score = initPack.score;
    
-    self.draw = function(){
+    self.draw = function(){	
+        var x = self.x - Player.list[selfId].x + WIDTH/2;
+        var y = self.y - Player.list[selfId].y + HEIGHT/2;
+        
         var hpWidth = 30 * self.hp / self.hpMax;
-        ctx.fillRect(self.x - hpWidth/2,self.y - 40,hpWidth,4);
-        ctx.fillText(self.number,self.x,self.y);
-       
-        ctx.fillText(self.score,self.x,self.y-60);
-    }
+        ctx.fillStyle = 'red';
+        ctx.fillRect(x - hpWidth/2,y - 40,hpWidth,4);
+        
+        var width = Img.player.width*2;
+        var height = Img.player.height*2;
+        
+        
+        ctx.drawImage(Img.player,
+            0,0,Img.player.width,Img.player.height,
+            x-width/2,y-height/2,width,height);
+        
+        //ctx.fillText(self.score,self.x,self.y-60);
+    };
    
     Player.list[self.id] = self;
    
     return self;
-}
+};
 Player.list = {};
 
     
@@ -90,17 +111,28 @@ var Bullet = function(initPack){
     self.x = initPack.x;
     self.y = initPack.y;
    
-    self.draw = function(){        
-        ctx.fillRect(self.x-5,self.y-5,10,10);
-    }
+    self.draw = function(){			
+        var width = Img.bullet.width/2;
+        var height = Img.bullet.height/2;
+        
+        var x = self.x - Player.list[selfId].x + WIDTH/2;
+        var y = self.y - Player.list[selfId].y + HEIGHT/2;
+        
+        ctx.drawImage(Img.bullet,
+            0,0,Img.bullet.width,Img.bullet.height,
+            x-width/2,y-height/2,width,height);
+    };
    
     Bullet.list[self.id] = self;       
     return self;
-}
+};
 Bullet.list = {};
 
+var selfId = null;
 
 socket.on('init',function(data){	
+    if(data.selfId)
+			selfId = data.selfId;
     //{ player : [{id:123,number:'1',x:0,y:0},{id:1,number:'2',x:0,y:0}], bullet: []}
     for(var i = 0 ; i < data.player.length; i++){
         new Player(data.player[i]);
@@ -149,12 +181,27 @@ socket.on('remove',function(data){
 });
 
 setInterval(function(){
+    if(!selfId)
+        return;
     ctx.clearRect(0,0,500,500);
+    drawMap();
+    drawScore();
     for(var i in Player.list)
         Player.list[i].draw();
     for(var i in Bullet.list)
         Bullet.list[i].draw();
 },40);
+
+var drawMap = function(){
+    var x = WIDTH/2 - Player.list[selfId].x;
+    var y = HEIGHT/2 - Player.list[selfId].y;
+    ctx.drawImage(Img.map,x,y);
+};
+
+var drawScore = function(){
+    ctx.fillStyle = 'white';
+    ctx.fillText(Player.list[selfId].score,0,30);
+};
     
 //key presses
 document.onkeydown = function(event){
@@ -191,8 +238,8 @@ document.onmouseup = function(event) {
 document.onmousemove = function(event){
     var x = event.clientX - canvas.getBoundingClientRect().left;
     var y = event.clientY - canvas.getBoundingClientRect().top;
-    x -= 250;
-    y -= 250;
+    x -= WIDTH/2;
+    y -= HEIGHT/2;
     var angle = Math.atan2(y,x) / Math.PI * 180;
     socket.emit('keyPress',{inputId:'mouseAngle',state:angle});
 };
