@@ -63,7 +63,7 @@ Img.player.src = '/client/img/player.png';
 Img.bullet = new Image();
 Img.bullet.src = '/client/img/bullet.png';
 Img.map = new Image();
-Img.map.src = '/client/img/map.png';
+Img.map.src = '/client/img/desert.png';
     
 var canvas = document.getElementById("gameDiv");
 var ctx = document.getElementById("ctx").getContext("2d");
