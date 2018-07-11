@@ -4,14 +4,18 @@
     <head>
         <link rel="stylesheet" href="/client/css/client.css">
         <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     </head>
 
     <!-- Sign-In Screen -->
     <div id="signDiv">
-            Username: <input id="signDiv-username" type="text"></input><br>
-            Password: <input id="signDiv-password" type="password"></input>
-            <button id="signDiv-signIn">Sign In</button>
-            <button id="signDiv-signUp">Sign Up</button>
+        <div id="testVue">
+            <p>{{ message }}</p>
+        </div>
+        Username: <input id="signDiv-username" type="text"></input><br>
+        Password: <input id="signDiv-password" type="password"></input>
+        <button id="signDiv-signIn">Sign In</button>
+        <button id="signDiv-signUp">Sign Up</button>
     </div>
 
     <!-- In-Game Screen -->
@@ -30,4 +34,5 @@
     </div>
 
     <script  src="/client/js/client.js"></script>
+    <script  src="/client/js/testVue.js"></script>
 </html>
