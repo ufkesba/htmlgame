@@ -4,4 +4,4 @@ var testComponent = new Vue({
     data: {
       message: 'Welcome to Brent\'s game!!!'
     }
-  })
+  });
